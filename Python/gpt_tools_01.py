@@ -61,6 +61,7 @@ def get_answer_gpt(system_content, user_content, ba, model, temperature, number_
   except Exception as e:  # обработка ошибок openai.error.RateLimitError
       logger.error(f'!!! External error: {str(e)}')
 
-  logger.debug(f'completion={completion}')
+
   answer = completion.choices[0].message.content
+  logger.debug(f'answer={answern}')
   return answer
