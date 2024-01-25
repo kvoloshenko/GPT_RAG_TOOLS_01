@@ -14,7 +14,7 @@ import db_tools_01 as dbt
 
 # Функции для ChatGPT
 
-def get_simple_answer_gpt(system_content, user_content, model, temperature):
+def get_simple_answer_gpt(system_content, user_content, model, temperature, client):
     messages = [
         {"role": "system", "content": system_content},
         {"role": "user", "content": user_content}
