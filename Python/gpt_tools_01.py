@@ -1,0 +1,66 @@
+import re
+import requests
+import codecs
+import urllib.request
+from bs4 import BeautifulSoup
+import tiktoken
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.docstore.document import Document
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from loguru import logger
+
+# Функции для ChatGPT
+
+def get_answer_gpt(system_content, user_content, temp=0.8):
+    messages = [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": user_content}
+    ]
+    completion = client.chat.completions.create(
+        model=LL_MODEL,
+        messages=messages,
+        temperature=temp
+    )
+    return completion  # возвращает ответ
+
+def get_transcript(file_name, language="en"):
+  print('get_transcript')
+  print(type(language), f'language={language}')
+  # https://platform.openai.com/docs/guides/speech-to-text/transcriptions
+  client = OpenAI(api_key=OpenAI_API_KEY)
+
+  audio_file= open(file_name, "rb")
+  transcript = client.audio.transcriptions.create(
+    model="whisper-1",
+    language=language,
+    file=audio_file,
+    response_format="text"
+  )
+  print (type(transcript),'\n',transcript)
+  return transcript
+
+def get_answer_gpt(system_content, user_content, ba):
+  embeddings = OpenAIEmbeddings()
+  db = dbt.load_db(ba, embeddings, DB_DIR_NAME)
+  # Поиск релевантных отрезков из базы знаний
+  message_content = dbt.get_message_content(user_content, db, NUMBER_RELEVANT_CHUNKS)
+  print(f'message_content={message_content}')
+  messages = [
+        {"role": "system", "content": system_content},
+        {"role": "user", "content": f"Here is the document with information to respond to the client: {message_content}\n\n Here is the client's question: \n{user_content}"}
+    ]
+  try:
+    completion = client.chat.completions.create(
+        model=LL_MODEL,
+        messages=messages,
+        temperature=TEMPERATURE
+    )
+  except Exception as e:  # обработка ошибок openai.error.RateLimitError
+      logger.error(f'!!! External error: {str(e)}')
+
+  logger.debug(f'completion={completion}')
+  answer = completion.choices[0].message.content
+
+  # answer = 'get_answer_gpt test_answer'
+  return answer
