@@ -42,7 +42,7 @@ def get_transcript(file_name, language="en"):
   print (type(transcript),'\n',transcript)
   return transcript
 
-def get_answer_gpt(system_content, user_content, ba, model, temperature, number_relevant_chunks, db_dir_name):
+def get_answer_gpt(system_content, user_content, ba, model, temperature, number_relevant_chunks, db_dir_name, client):
   embeddings = OpenAIEmbeddings()
   db = dbt.load_db(ba, embeddings, db_dir_name)
   # Поиск релевантных отрезков из базы знаний
