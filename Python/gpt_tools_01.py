@@ -26,11 +26,11 @@ def get_simple_answer_gpt(system_content, user_content, model, temperature, clie
     )
     return completion  # возвращает ответ
 
-def get_transcript(file_name, language="en"):
+def get_transcript(client, file_name, language="en"):
   print('get_transcript')
   print(type(language), f'language={language}')
   # https://platform.openai.com/docs/guides/speech-to-text/transcriptions
-  client = OpenAI(api_key=OpenAI_API_KEY)
+
 
   audio_file= open(file_name, "rb")
   transcript = client.audio.transcriptions.create(
