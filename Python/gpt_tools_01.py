@@ -9,6 +9,8 @@ from langchain.docstore.document import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from loguru import logger
+import tools_01 as tls
+import db_tools_01 as dbt
 
 # Функции для ChatGPT
 
