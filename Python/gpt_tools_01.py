@@ -14,15 +14,15 @@ import db_tools_01 as dbt
 
 # Функции для ChatGPT
 
-def get_answer_gpt(system_content, user_content, temp=0.8):
+def get_simple_answer_gpt(system_content, user_content, model, temperature):
     messages = [
         {"role": "system", "content": system_content},
         {"role": "user", "content": user_content}
     ]
     completion = client.chat.completions.create(
-        model=LL_MODEL,
+        model=model,
         messages=messages,
-        temperature=temp
+        temperature=temperature
     )
     return completion  # возвращает ответ
 
@@ -42,11 +42,11 @@ def get_transcript(file_name, language="en"):
   print (type(transcript),'\n',transcript)
   return transcript
 
-def get_answer_gpt(system_content, user_content, ba):
+def get_answer_gpt(system_content, user_content, ba, model, temperature, number_relevant_chunks):
   embeddings = OpenAIEmbeddings()
   db = dbt.load_db(ba, embeddings, DB_DIR_NAME)
   # Поиск релевантных отрезков из базы знаний
-  message_content = dbt.get_message_content(user_content, db, NUMBER_RELEVANT_CHUNKS)
+  message_content = dbt.get_message_content(user_content, db, number_relevant_chunks)
   print(f'message_content={message_content}')
   messages = [
         {"role": "system", "content": system_content},
@@ -54,9 +54,9 @@ def get_answer_gpt(system_content, user_content, ba):
     ]
   try:
     completion = client.chat.completions.create(
-        model=LL_MODEL,
+        model=model,
         messages=messages,
-        temperature=TEMPERATURE
+        temperature=temperature
     )
   except Exception as e:  # обработка ошибок openai.error.RateLimitError
       logger.error(f'!!! External error: {str(e)}')
