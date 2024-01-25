@@ -27,8 +27,8 @@ def get_simple_answer_gpt(system_content, user_content, model, temperature, clie
     return completion  # возвращает ответ
 
 def get_transcript(client, file_name, language="en"):
-  print('get_transcript')
-  print(type(language), f'language={language}')
+  logger.debug('get_transcript')
+  logger.debug(type(language), f'language={language}')
   # https://platform.openai.com/docs/guides/speech-to-text/transcriptions
 
 
@@ -39,7 +39,7 @@ def get_transcript(client, file_name, language="en"):
     file=audio_file,
     response_format="text"
   )
-  print (type(transcript),'\n',transcript)
+  logger.debug(type(transcript),'\n',transcript)
   return transcript
 
 def get_answer_gpt(system_content, user_content, ba, model, temperature, number_relevant_chunks, db_dir_name, client):
