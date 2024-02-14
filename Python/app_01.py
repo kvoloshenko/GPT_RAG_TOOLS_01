@@ -58,34 +58,39 @@ st.title("Chat with Multi Doc")
 with st.sidebar:
     st.header("Settings")
     API_URL = st.text_input("API URL")
-    if st.button('Create Db'):
-        create_db(API_URL, knwl_url, BA)
 
+if API_URL is None or API_URL == "":
+    st.info("Please enter a API URL")
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [
-        AIMessage(content="Привет! Как я могу тебе помочь?"),
-    ]
+else:
+    with st.sidebar:
+        if st.button('Create Db'):
+            create_db(API_URL, knwl_url, BA)
 
-# user input
-user_query = st.chat_input("Type your message here...")
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = [
+            AIMessage(content="Привет! Как я могу тебе помочь?"),
+        ]
 
-if user_query is not None and user_query != "":
-    logger.debug(f'user_query={user_query}')
-    st.session_state.chat_history.append(HumanMessage(content=user_query))
-    response = flask_answer_gpt(API_URL, system_content, user_query, BA)
-    logger.debug(f'responset={response}')
-    st.session_state.chat_history.append(AIMessage(content=response))
+    # user input
+    user_query = st.chat_input("Type your message here...")
 
-# conversation
-for message in st.session_state.chat_history:
-    if isinstance(message, AIMessage):
-        with st.chat_message("AI"):
-            st.write(message.content)
-    elif isinstance(message, HumanMessage):
-        with st.chat_message("Human"):
-            st.write(message.content)
+    if user_query is not None and user_query != "":
+        logger.debug(f'user_query={user_query}')
+        st.session_state.chat_history.append(HumanMessage(content=user_query))
+        response = flask_answer_gpt(API_URL, system_content, user_query, BA)
+        logger.debug(f'responset={response}')
+        st.session_state.chat_history.append(AIMessage(content=response))
 
-# with st.sidebar:
-#     st.write(st.session_state.chat_history)
+    # conversation
+    for message in st.session_state.chat_history:
+        if isinstance(message, AIMessage):
+            with st.chat_message("AI"):
+                st.write(message.content)
+        elif isinstance(message, HumanMessage):
+            with st.chat_message("Human"):
+                st.write(message.content)
+
+    # with st.sidebar:
+    #     st.write(st.session_state.chat_history)
 
