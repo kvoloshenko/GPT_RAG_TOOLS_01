@@ -28,6 +28,7 @@ st.title("Chat with Multi Doc")
 # sidebar
 with st.sidebar:
     st.header("Settings")
+    st.button("Create Db", type="primary")
 
 with st.sidebar:
     st.write("Привет st.sidebar")
