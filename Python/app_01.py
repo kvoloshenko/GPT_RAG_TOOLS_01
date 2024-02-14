@@ -22,7 +22,7 @@ knwl_url = sys_url = tls.get_google_url(KNOWLEDGE_BASE_URL)
 BA = os.environ.get("BA") # billing account
 logger.debug(f'BA={BA}')
 
-def flask_answer_gpt(api_url, system_content, user_content, ba):
+def answer_gpt(api_url, system_content, user_content, ba):
     payload = dict({"system_content": system_content, "user_content": user_content, "ba": ba})
     logger.debug(payload)
     url = api_url + '/answer_gpt'
@@ -78,7 +78,7 @@ else:
     if user_query is not None and user_query != "":
         logger.debug(f'user_query={user_query}')
         st.session_state.chat_history.append(HumanMessage(content=user_query))
-        response = flask_answer_gpt(API_URL, system_content, user_query, BA)
+        response = answer_gpt(API_URL, system_content, user_query, BA)
         logger.debug(f'responset={response}')
         st.session_state.chat_history.append(AIMessage(content=response))
 
