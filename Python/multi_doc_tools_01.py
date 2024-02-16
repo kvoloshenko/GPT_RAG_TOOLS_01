@@ -1,15 +1,33 @@
 import os
 import re
-from langchain_community.document_loaders import WebBaseLoader
-from langchain_community.document_loaders import MHTMLLoader
-from langchain_community.document_loaders import ConfluenceLoader
+from langchain_community.document_loaders import WebBaseLoader, TextLoader, Docx2txtLoader, PyPDFLoader, MHTMLLoader, ConfluenceLoader
+
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from loguru import logger
 
+def load_documents_multi(dir):
+    logger.debug(f'lload_documents_multi............: dir={dir}')
+    documents = []
+    for root, dirs, files in os.walk(dir):
+        for file in files:
+            if file.endswith(".pdf"):
+                logger.debug(f'root={root} file={file}')
+                loader = PyPDFLoader(os.path.join(root, file))
+                documents.extend(loader.load())
+            elif file.endswith('.docx') or file.endswith('.doc'):
+                # https://python.langchain.com/docs/integrations/document_loaders/microsoft_word
+                logger.debug(f'root={root} file={file}')
+                loader = Docx2txtLoader(os.path.join(root, file))
+                documents.extend(loader.load())
+            elif file.endswith('.txt'):
+                logger.debug(f'root={root} file={file}')
+                loader = TextLoader(os.path.join(root, file), encoding = 'UTF-8')
+                documents.extend(loader.load())
+
 def load_documents_mhtml(dir):
-    logger.debug(f'load_documents............: dir={dir}')
+    logger.debug(f'load_documents_mhtml............: dir={dir}')
     documents = []
     for root, dirs, files in os.walk(dir):
         for file in files:
@@ -23,6 +41,13 @@ def load_documents_mhtml(dir):
     logger.debug(documents[1].metadata)
     # logger.debug(documents[1].page_content)
     return documents
+
+def load_documents_confluence(url, username, password, space_key):
+    logger.debug(f'load_documents_confluence............')
+    loader = ConfluenceLoader(url=url, username=username, api_key=password)
+    documents = loader.load(space_key=space_key, include_attachments=False, limit=10)
+    return documents
+
 def split_documents(documents):
     logger.debug('split_documents............')
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=0)
@@ -32,11 +57,7 @@ def split_documents(documents):
     logger.debug(source_chunks[10].metadata)
     # logger.debug(source_chunks[10].page_content)
     return source_chunks
-def load_documents_confluence(url, username, password, space_key):
-    logger.debug(f'load_documents............')
-    loader = ConfluenceLoader(url=url, username=username, api_key=password)
-    documents = loader.load(space_key=space_key, include_attachments=False, limit=10)
-    return documents
+
 def get_embeddings():
     logger.debug('get_embeddings............')
     model_id = 'intfloat/multilingual-e5-large'
