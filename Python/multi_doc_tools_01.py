@@ -6,6 +6,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from loguru import logger
+from tools_01 import split_text
 
 def load_documents_multi(dir):
     logger.debug(f'lload_documents_multi............: dir={dir}')
@@ -92,7 +93,7 @@ def get_message_content(topic, db, k):
     logger.debug(f'topic={topic}')
     docs = db.similarity_search(topic, k=k)
     message_content = re.sub(r'\n{2}', ' ', '\n '.join(
-        [f'\n#### {i + 1} Relevant chunk ####\n' + str(doc.metadata) + '\n' + doc.page_content + '\n' for i, doc in
+        [f'\n#### {i + 1} Relevant chunk ####\n' + str(doc.metadata) + '\n' + split_text(doc.page_content, 80) + '\n' for i, doc in
          enumerate(docs)]))
     logger.debug(f'message_content={message_content}')
     return message_content
