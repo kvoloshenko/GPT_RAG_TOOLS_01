@@ -58,11 +58,13 @@ def split_documents(documents):
     # logger.debug(source_chunks[10].page_content)
     return source_chunks
 
-def get_embeddings():
+def get_embeddings(type='cpu'):
     logger.debug('get_embeddings............')
     model_id = 'intfloat/multilingual-e5-large'
-    # model_kwargs = {'device': 'cpu'}
-    model_kwargs = {'device': 'cuda'}
+    if type=='cpu':
+        model_kwargs = {'device': 'cpu'}
+    else:
+        model_kwargs = {'device': 'cuda'}
     embeddings = HuggingFaceEmbeddings(
         model_name=model_id,
         model_kwargs=model_kwargs
