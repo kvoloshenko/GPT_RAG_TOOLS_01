@@ -5,6 +5,8 @@ from langchain_community.document_loaders import WebBaseLoader, TextLoader, Docx
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain.retrievers import BM25Retriever
+from langchain.retrievers import EnsembleRetriever
 from loguru import logger
 from tools_01 import split_text
 
@@ -89,9 +91,26 @@ def load_db(db_file_name, embeddings):
     new_db = FAISS.load_local(db_file_name, embeddings)
     return new_db
 def get_message_content(topic, db, k):
-    logger.debug('search............')
+    logger.debug('get_message_content............')
     logger.debug(f'topic={topic}')
     docs = db.similarity_search(topic, k=k)
+    message_content = re.sub(r'\n{2}', ' ', '\n '.join(
+        [f'\n#### {i + 1} Relevant chunk ####\n' + str(doc.metadata) + '\n' + split_text(doc.page_content, 80) + '\n' for i, doc in
+         enumerate(docs)]))
+    logger.debug(f'message_content={message_content}')
+    return message_content
+
+# Поиск релевантных отрезков с помощью ensemble_retriever
+def get_message_content_ensemble(topic, db, source_chunks, k):
+    logger.debug('get_message_content_ensemble............')
+    logger.debug(f'topic={topic}')
+    faiss_retriever = db.as_retriever(search_kwargs={"k": k})
+    bm25_retriever = BM25Retriever.from_documents(source_chunks)
+    bm25_retriever.k = k
+    ensemble_retriever = EnsembleRetriever(retrievers=[bm25_retriever, faiss_retriever],
+                                       weights=[0.5, 0.5])
+
+    docs = ensemble_retriever.get_relevant_documents(topic)
     message_content = re.sub(r'\n{2}', ' ', '\n '.join(
         [f'\n#### {i + 1} Relevant chunk ####\n' + str(doc.metadata) + '\n' + split_text(doc.page_content, 80) + '\n' for i, doc in
          enumerate(docs)]))
