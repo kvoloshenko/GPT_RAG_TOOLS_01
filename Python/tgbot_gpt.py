@@ -1,8 +1,8 @@
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from dotenv import load_dotenv
-from tools_00 import split_text
+from tools_01 import split_text
 import os
-import platon_chat_gpt as chat_gpt
+import gpt_tools_01 as chat_gpt
 from loguru import logger
 
 logger.add("Logs/bot_debug.log", format="{time} {level} {message}", level="DEBUG", rotation="100 KB", compression="zip")
@@ -60,7 +60,9 @@ async def text(update, context):
             chat_gpt.PROMPT, chat_gpt.KNOWLEDGE_BASE = chat_gpt.reload_data()
             await update.message.reply_text(f'Данные обновлены!')
         else:
-            reply_text = chat_gpt.answer_user_question(topic, user_name, str(user_id))
+            # reply_text = chat_gpt.answer_user_question(topic, user_name, str(user_id))
+            # reply_text = chat_gpt.get_answer_gpt(???)
+            reply_text = 'это тестовое сообщение'
             response = TEXT_BEGINNING + '\n'
             response = response + reply_text + '\n' + TEXT_END
 
