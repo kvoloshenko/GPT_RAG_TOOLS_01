@@ -72,8 +72,12 @@ def get_knowledge_base_txt(ba, data_files_type, knowledge_base_url, db_dir_name 
     @param knowledge_base_url:
     @return: The prompt text
     """
-
+    logger.error(f'ba ={ba}')
+    logger.error(f'data_files_type ={data_files_type}')
+    logger.error(f'knowledge_base_url ={knowledge_base_url}')
+    logger.error(f'db_dir_name ={db_dir_name}')
     knowledge_base_file_name = get_knowledge_base_file_name(ba, db_dir_name)
+    logger.error(f'knowledge_base_file_name ={knowledge_base_file_name}')
     if data_files_type == 'local':
         knowledge_base_text = load_text(knowledge_base_file_name)
         return knowledge_base_text
@@ -90,7 +94,7 @@ def create_db(ba, knowledge_base_text, db_dir_name, chunk_size, embeddings):
     @param ba:
     @return:
     """
-    logger.debug(f'knowledge_base_text={knowledge_base_text}')
+    # logger.debug(f'knowledge_base_text={knowledge_base_text}')
     db_file_name = get_db_file_name(ba, db_dir_name)
     logger.debug(f'db_file_name={db_file_name}')
     source_chunks, chunk_num = get_source_chunks(knowledge_base_text, chunk_size)
@@ -104,7 +108,7 @@ def create_db(ba, knowledge_base_text, db_dir_name, chunk_size, embeddings):
 
     return db, db_file_name, chunk_num
 
-def load_db(ba, embeddings, db_dir_name):
+def load_db(ba, embeddings, db_dir_name, type, chunk_size):
     """
     Loading the index db from it's file
     @param db_file_name:
@@ -114,10 +118,11 @@ def load_db(ba, embeddings, db_dir_name):
     logger.debug(f'db_file_name={db_file_name}')
     # Инициализирум модель эмбеддингов
     if not os.path.exists(db_file_name):
-        knowledge_base_text = get_knowledge_base_txt(ba, type='NotLocal')
-        new_db, db_file_name, chunk_num = create_db(knowledge_base_text, ba)
+        db_file = db_file_name + '.txt'
+        knowledge_base_text = get_knowledge_base_txt(ba, type, db_file, db_dir_name)
+        new_db, db_file_name, chunk_num = create_db(ba, knowledge_base_text, db_dir_name, chunk_size, embeddings)
     else:
-        new_db = FAISS.load_local(db_file_name, embeddings)
+        new_db = FAISS.load_local(db_file_name, embeddings, allow_dangerous_deserialization=True)
     return new_db
 
 def get_message_content(topic, index_db, NUMBER_RELEVANT_CHUNKS):
@@ -132,3 +137,20 @@ def get_message_content(topic, index_db, NUMBER_RELEVANT_CHUNKS):
     message_content = re.sub(r'\n{2}', ' ', '\n '.join([f'\n#### Document excerpt №{i+1}####\n' + doc.page_content + '\n' for i, doc in enumerate(docs)]))
     return message_content
 
+
+# Функция получения релевантных чанков (фрагметов) по теме из индексной базы данных с оценкой
+def get_message_content_with_score(topic, score_level, index_db, k):
+    docs = index_db.similarity_search_with_score(topic, k = k)
+    message_content = ''
+    i = 0
+    for d in docs:
+      score = d[1]
+      if score > score_level:
+        i += 1
+        message_content = message_content + f'\n#### Document excerpt №{i}####\n' + d[0].page_content + '\n'
+
+    print(f'i={i}')
+    if i > 0:
+      return message_content
+    else:
+      return 'Данные на найдены в Базе Знаний'
